@@ -6,7 +6,7 @@ config:
     value:
       pulumi:template: kubernetes-yaml
 outputs:
-  name: ${deployment.metadata.name}
+  ip: ${service.spec.clusterIP}
 resources:
   deployment:
     properties:
@@ -22,6 +22,18 @@ resources:
               - image: nginx
                 name: nginx
     type: kubernetes:apps/v1:Deployment
+  service:
+    type: kubernetes:core/v1:Service
+    properties:
+      metadata:
+        labels: ${appLabels}
+      spec:
+        type: ClusterIP
+        selector: ${appLabels}
+        ports:
+          - port: 80
+            targetPort: 80
+            protocol: TCP
 variables:
   appLabels:
     app: nginx
