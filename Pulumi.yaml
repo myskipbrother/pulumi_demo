@@ -1,27 +1,38 @@
-name: hongjie_demo
+name: quickstart
 runtime: yaml
-description: a minimal kuber for hongjie demo
-config:
-  pulumi:tags:
-    value:
-      pulumi:template: kubernetes-yaml
-outputs:
-  name: ${deployment.metadata.name}
+description: A minimal Kubernetes Pulumi YAML program
+
+variables:
+  appLabels:
+    app: nginx
+
 resources:
   deployment:
+    type: kubernetes:apps/v1:Deployment
     properties:
       spec:
-        replicas: 1
         selector:
           matchLabels: ${appLabels}
+        replicas: 1
         template:
           metadata:
             labels: ${appLabels}
           spec:
             containers:
-              - image: nginx
-                name: nginx
-    type: kubernetes:apps/v1:Deployment
-variables:
-  appLabels:
-    app: nginx
+              - name: nginx
+                image: nginx
+  service:
+    type: kubernetes:core/v1:Service
+    properties:
+      metadata:
+        labels: ${appLabels}
+      spec:
+        type: ClusterIP
+        selector: ${appLabels}
+        ports:
+          - port: 80
+            targetPort: 80
+            protocol: TCP
+
+outputs:
+  ip: ${service.spec.clusterIP}
